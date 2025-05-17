@@ -73,22 +73,19 @@ def read_csv_titles(csv_file='The Mangadex Massacre - Sheet1.csv'):
 def find_matching_titles(library_titles, csv_titles):
     matches = []
     
-    # Check each normalized library title against normalized CSV titles
+    # Check each library title and its alternates against each CSV title and its alternates
     for lib_norm, lib_data in library_titles.items():
-        if lib_norm in csv_titles:
-            # Found a match
-            match_info = {
-                'library_title': lib_data['original'],
-                'csv_title': csv_titles[lib_norm]['original'],
-                'library_alt_titles': lib_data['alt_titles'],
-                'csv_alt_titles': csv_titles[lib_norm]['alt_titles']
-            }
-            matches.append(match_info)
-            continue
+        # Create a set of all normalized library titles for this entry (main + alternates)
+        lib_title_set = {lib_norm}
+        lib_title_set.update(normalize_title(alt) for alt in lib_data['alt_titles'])
         
-        # Check alternative titles
         for csv_norm, csv_data in csv_titles.items():
-            if lib_norm in [normalize_title(alt) for alt in csv_data['alt_titles']]:
+            # Create a set of all normalized CSV titles for this entry (main + alternates)
+            csv_title_set = {csv_norm}
+            csv_title_set.update(normalize_title(alt) for alt in csv_data['alt_titles'])
+            
+            # If there's any overlap between the title sets, we have a match
+            if lib_title_set & csv_title_set:  # Using set intersection
                 match_info = {
                     'library_title': lib_data['original'],
                     'csv_title': csv_data['original'],
@@ -96,7 +93,7 @@ def find_matching_titles(library_titles, csv_titles):
                     'csv_alt_titles': csv_data['alt_titles']
                 }
                 matches.append(match_info)
-                break
+                break  # Found a match for this library title, move to next one
     
     return matches
 

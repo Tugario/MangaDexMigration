@@ -46,8 +46,7 @@ def archive_processed_files(processed_file):
 def extract_manga_titles(manga_data):
     manga_entry = {
         'main_en': None,
-        'alt_en': [],
-        'alt_ja': []
+        'alt_titles': []  # Combined list for all alternative titles
     }
     
     # Extract main title if it exists
@@ -57,19 +56,24 @@ def extract_manga_titles(manga_data):
         # Get main title
         if "title" in attributes:
             title_obj = attributes["title"]
+            # Try to get English title first
             if "en" in title_obj:
                 manga_entry['main_en'] = title_obj["en"]
+            # If no English title, use any other language as main title
+            else:
+                for lang, title in title_obj.items():
+                    manga_entry['main_en'] = title
+                    break
         
-        # Get alternative titles
+        # Get all alternative titles from all languages
         if "altTitles" in attributes:
             for alt_title in attributes["altTitles"]:
-                if "en" in alt_title:
-                    manga_entry['alt_en'].append(alt_title["en"])
-                if "ja" in alt_title:
-                    manga_entry['alt_ja'].append(alt_title["ja"])
+                for lang, title in alt_title.items():
+                    if title not in manga_entry['alt_titles']:  # Avoid duplicates
+                        manga_entry['alt_titles'].append(title)
     
-    # Only return entries that have at least one English title
-    if manga_entry['main_en'] or manga_entry['alt_en']:
+    # Return entry if it has at least one title
+    if manga_entry['main_en'] or manga_entry['alt_titles']:
         return manga_entry
     return None
 
@@ -104,21 +108,16 @@ def parse_manga_file(file_path):
 def format_manga_entry(entry):
     lines = []
     
-    # Add main English title
+    # Add main title
     if entry['main_en']:
         lines.append(f"Main Title: {entry['main_en']}")
     
-    # Add alternative English titles if different from main
-    alt_en = [title for title in entry['alt_en'] if title != entry['main_en']]
-    if alt_en:
-        lines.append("Alternative English Titles:")
-        for title in alt_en:
-            lines.append(f"  • {title}")
-    
-    # Add Japanese titles
-    if entry['alt_ja']:
-        lines.append("Japanese Titles:")
-        for title in entry['alt_ja']:
+    # Add all alternative titles
+    if entry['alt_titles']:
+        lines.append("Alternative Titles:")
+        # Filter out the main title from alternatives to avoid duplication
+        alt_titles = [title for title in entry['alt_titles'] if title != entry['main_en']]
+        for title in alt_titles:
             lines.append(f"  • {title}")
     
     return "\n".join(lines)
