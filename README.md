@@ -9,27 +9,30 @@ Processes manga data from JSON files and maintains a library of titles.
 
 **Features:**
 - Reads manga data from `mangas.json`
-- Extracts English and Japanese titles
+- Extracts all titles (main and alternative) in any language
 - Saves formatted entries to `my_library.txt`
 - Automatically archives processed JSON files
 - Creates a new empty `mangas.json` after processing
 
 **How to Use:**
-1. Get your manga data:
+1. Get your manga data (repeat for each page):
    - Go to your MangaDex library page
    - Open browser's Developer Tools (F12)
    - Go to the Network tab
-   - Look for a request that starts with `manga?ids[]=`
+   - For each page, look for the request that starts with `manga?ids[]=`
    - Copy the response JSON data into `mangas.json`
-2. Run the script:
+   - Run the parser (it will archive the current data before processing the next page)
+2. Run the script after pasting each page's data:
    ```bash
    python manga_parser.py
    ```
 3. The script will:
    - Process the manga data
-   - Add entries to `my_library.txt`
+   - Add entries to `my_library.txt` (appending to existing entries)
    - Move the processed JSON to the `archives` folder
-   - Create a new empty `mangas.json`
+   - Create a new empty `mangas.json` for the next page
+
+Note: You'll need to repeat steps 1-2 for each page of your library since MangaDex limits results to 32 manga per page.
 
 ### 2. manga_compare.py
 Compares titles between your library and a CSV file to find matches.
