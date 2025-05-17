@@ -1,0 +1,26 @@
+# Ignore archives folder
+archives/
+
+# Ignore specific text files
+matching_titles.txt
+my_library.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db 
